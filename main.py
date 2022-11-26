@@ -8,7 +8,7 @@ import math
 class Earth:
     def __init__(self):
         self.poligons = 100
-        self.R = 6371
+        self.R = 6371 * 1000
         self.R_atm = 6489
         self.mass = 5.972 * (10 ** 24)
         print(self.mass, "M")
@@ -41,26 +41,29 @@ class Earth:
 
 class Satellite:
     def __init__(self):
-        self.hight = 0
+        self.hight = 200 * 1000
         self.x = earth.R + self.hight
         self.y = earth.R + self.hight
         self.z = earth.R + self.hight
         print(self.x, self.y, self.z)
         self.position = [self.x, self.y, self.z]
-        self.velocity = 10000
-        self.mass = 1000
+        self.velocity = 1000
+        self.mass = 100
         self.direction = np.array([1, 0, 0])
 
     def create(self, i):
         r = math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
-        print(r, "R")
         direction_earth = np.array([0 - self.x, 0 - self.y, 0 - self.z])
         direction_earth = direction_earth / np.linalg.norm(direction_earth)
+        direction = self.direction / np.linalg.norm(self.direction)
         F = self.mass * earth.g #G * ((self.mass * earth.mass) / (r ** 2))
-        #print(F)
-        x2 = self.x + self.velocity * (direction_earth[0] + self.direction[0]) // 2
-        y2 = self.y + self.velocity * (direction_earth[1] + self.direction[1]) // 2
-        z2 = self.z + self.velocity * (direction_earth[2] + self.direction[2]) // 2
+        f = self.velocity * self.mass
+        #print(r)
+        self.direction = [(direction_earth[0] * F + direction[0] * f) / 2, (direction_earth[0] * F + direction[0] * f) / 2, (direction_earth[2] * F + direction[2] * f) / 2]
+        print(self.direction)
+        x2 = self.x + (direction_earth[0] * F + direction[0] * f) / 2
+        y2 = self.y + (direction_earth[1] * F + direction[1] * f) / 2
+        z2 = self.z + (direction_earth[2] * F + direction[2] * f) / 2
         self.x = x2
         self.y = y2
         self.z = z2
