@@ -1,21 +1,26 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import PIL
+import utm
 import matplotlib.animation as animation
 from vectors import Vector
 import math
 
+def rotation(x, y, a):
+    a = math.radians(a)
+    x2 = x * round(math.cos(a), 5) - y * math.sin(a)
+    y2 = x * math.sin(a) + y * round(math.cos(a), 5)
+    return (x2, y2)
 class Earth:
     def __init__(self):
-        self.poligons = 100
+        self.poligons = 200
         self.R = 6371 * 1000
         self.R_atm = 6489
         self.mass = 5.972 * (10 ** 24)
-        print(self.mass, "M")
         self.g = 9.8
 
     def create(self):
-        u = np.linspace(0, 2 * np.pi, self.poligons)
+        u = np.linspace(-np.pi, np.pi, self.poligons)
         v = np.linspace(0, np.pi, self.poligons)
 
         x = self.R * np.outer(np.cos(u), np.sin(v))
@@ -23,7 +28,6 @@ class Earth:
         z = self.R * np.outer(np.ones(np.size(u)), np.cos(v))
 
         im = PIL.Image.open('min_earth.png')
-        print(im.size)
         im = np.array(im.resize([self.poligons, self.poligons])) / 255
 
         ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
@@ -40,50 +44,40 @@ class Earth:
 
 
 class Satellite:
-    def __init__(self):
-        self.hight = 200 * 1000
-        self.x = earth.R + self.hight
-        self.y = earth.R + self.hight
-        self.z = earth.R + self.hight
-        print(self.x, self.y, self.z)
+    def __init__(self, latitude, longitude):
+        self.hight = 1000 * 1000
+
+        x = earth.R + self.hight
+        y = 0
+        z = 0
+        self.x = -earth.R - self.hight
+        self.y = 0
+        self.z = 0
+
+        self.x, self.z = rotation(x, z, latitude)
+        self.x, self.y = rotation(self.x, y, longitude)
+
+        print(x, y, z, "coordsNON")
+        print(self.x, self.y, self.z, "coords")
         self.position = [self.x, self.y, self.z]
         self.velocity = 1000
         self.mass = 100
         self.direction = np.array([1, 0, 0])
 
-    def create(self, i):
-        r = math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
-        direction_earth = np.array([0 - self.x, 0 - self.y, 0 - self.z])
-        direction_earth = direction_earth / np.linalg.norm(direction_earth)
-        direction = self.direction / np.linalg.norm(self.direction)
-        F = self.mass * earth.g #G * ((self.mass * earth.mass) / (r ** 2))
-        f = self.velocity * self.mass
-        #print(r)
-        self.direction = [(direction_earth[0] * F + direction[0] * f) / 2, (direction_earth[0] * F + direction[0] * f) / 2, (direction_earth[2] * F + direction[2] * f) / 2]
-        print(self.direction)
-        x2 = self.x + (direction_earth[0] * F + direction[0] * f) / 2
-        y2 = self.y + (direction_earth[1] * F + direction[1] * f) / 2
-        z2 = self.z + (direction_earth[2] * F + direction[2] * f) / 2
-        self.x = x2
-        self.y = y2
-        self.z = z2
-        self.position = [self.x, self.y, self.z]
-        ax.scatter(x2, y2, z2, color="red")
+    def create(self):
+        ax.scatter(self.x, self.y, self.z, color="red")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 G = 6.6743015 * (10**(-11))
-print(G, "---------G")
 
 earth = Earth()
-satellite = Satellite()
+satellite = Satellite(90, 90)
 
 earth.create()
 #planet.create_atmosphere()
 
-def animate(i):
-    satellite.create(i)
+satellite.create()
 
-ani = animation.FuncAnimation(fig, animate, interval=0)
 plt.show()
