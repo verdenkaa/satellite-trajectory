@@ -45,20 +45,20 @@ class Earth:
 
 class Satellite:
     def __init__(self, latitude, longitude):
-        self.hight = 1000 * 1000
+        self.hight = 2000 * 1000
 
         x = earth.R + self.hight
         y = 0
         z = 0
-        self.x = -earth.R - self.hight
-        self.y = 0
-        self.z = 0
+
 
         self.x, self.z = rotation(x, z, latitude)
         self.x, self.y = rotation(self.x, y, longitude)
 
+
         print(x, y, z, "coordsNON")
         print(self.x, self.y, self.z, "coords")
+
         self.position = [self.x, self.y, self.z]
         self.velocity = 1000
         self.mass = 100
@@ -73,11 +73,9 @@ ax = fig.add_subplot(111, projection='3d')
 G = 6.6743015 * (10**(-11))
 
 earth = Earth()
-satellite = Satellite(90, 90)
+satellite = Satellite(45, 90)
 
 earth.create()
-#planet.create_atmosphere()
-
 satellite.create()
 
 plt.show()
