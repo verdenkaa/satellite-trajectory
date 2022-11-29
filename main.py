@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import PIL
-import utm
-import matplotlib.animation as animation
-from vectors import Vector
+from scipy.integrate import odeint
 import math
 
 def rotation(x, y, a):
@@ -11,6 +9,47 @@ def rotation(x, y, a):
     x2 = x * round(math.cos(a), 5) - y * math.sin(a)
     y2 = x * math.sin(a) + y * round(math.cos(a), 5)
     return (x2, y2)
+
+'''def move(s, t):
+    x, y, z, ax, ay, az = s
+
+    R = math.sqrt(x ** 2 + y ** 2 + z ** 2)
+    F_t = G * (earth.mass * satellite.mass) / R ** 2
+    F_s = satellite.mass * satellite.velocity
+
+    V_e = np.array([0 - x, 0 - y, 0 - z])
+    V_e = V_e / (V_e**2).sum()**0.5
+    #print(V_e, "---", x, y, z)
+    return np.array([ax, ay, az, ax, ay, az])'''
+
+def move2(x, y, z, time):
+    xl, yl, zl = [x,], [y,], [z,]
+    F_s = satellite.mass * satellite.velocity
+    for i in range(time):
+
+        R = math.sqrt(x ** 2 + y ** 2 + z ** 2)
+        F_t = G * (earth.mass * satellite.mass) / R ** 2
+
+        V_e = np.array([-x, -y, -z])  # вектор к земле
+        V_e = V_e / (V_e ** 2).sum() ** 0.5
+
+        V_north = np.array([-xl[-1], -yl[-1], 0])  # вектор к северу
+        V_north = V_north / (V_north ** 2).sum() ** 0.5
+
+        v_z, _ = rotation(-zl[-1], -xl[-1], 90)  # ортогональный вектор
+
+        V_move = np.array([V_north[0], V_north[1], v_z])  # вектор движения итоговый
+
+        x = x + V_move[0] * F_s
+        y = y + V_move[1] * F_s
+        z = z + V_move[2] * F_s
+        xl.append(x)
+        yl.append(y)
+        zl.append(z)
+        #print([xl[-1], yl[-1], zl[-1]])
+    return [xl, yl, zl]
+
+
 class Earth:
     def __init__(self):
         self.poligons = 200
@@ -55,25 +94,37 @@ class Satellite:
         self.x, self.z = rotation(x, z, latitude)
         self.x, self.y = rotation(self.x, y, longitude)
 
-
-        print(x, y, z, "coordsNON")
-        print(self.x, self.y, self.z, "coords")
-
-        self.position = [self.x, self.y, self.z]
-        self.velocity = 1000
+        self.position = np.array([self.x, self.y, self.z])
+        self.velocity = 8000
         self.mass = 100
-        self.direction = np.array([1, 0, 0])
+
+
 
     def create(self):
         ax.scatter(self.x, self.y, self.z, color="red")
+        ts = np.linspace(0, 1, 5)
+        #sol = odeint(move,
+                     #np.array([self.x, self.y, self.z, self.direction[0], self.direction[1], self.direction[2]]),
+                     #ts)
+        x, y, z = move2(self.x, self.y, self.z, 1000)
+
+        ax.plot(x, y, z, linewidth=2.0, color="black")
+
+
+
+        #ax.plot3D(X_Sat, Y_Sat, Z_Sat, 'black')
+        ax.set_xlabel('X [km]')
+        ax.set_ylabel('Y [km]')
+        ax.set_zlabel('Z [km]')
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 G = 6.6743015 * (10**(-11))
+mu = 3.986004418E+05  # Earth's gravitational parameter
 
 earth = Earth()
-satellite = Satellite(45, 90)
+satellite = Satellite(0, 0)
 
 earth.create()
 satellite.create()
