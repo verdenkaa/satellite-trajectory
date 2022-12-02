@@ -14,11 +14,11 @@ def state(s: np.ndarray, t: float) -> np.ndarray:
     M_1 = earth.mass
     M_2 = satellite.mass
     x, y, z, vx, vy, vz = s
-    r1 = np.array([0 - x, 0 - y, 0 - z])
-    mr1 = np.linalg.norm(r1) ** 3
-    ax = G * (M_1 * (0 - x) / mr1 + M_2 * (0 - x) / mr1)
-    ay = G * (M_1 * (0 - y) / mr1 + M_2 * (0 - y) / mr1)
-    az = G * (M_1 * (0 - z) / mr1 + M_2 * (0 - z) / mr1)
+    r = np.array([0 - x, 0 - y, 0 - z])
+    mr = np.linalg.norm(r) ** 3
+    ax = G * (M_1 * (0 - x) / mr + M_2 * (0 - x) / mr)
+    ay = G * (M_1 * (0 - y) / mr + M_2 * (0 - y) / mr)
+    az = G * (M_1 * (0 - z) / mr + M_2 * (0 - z) / mr)
     return np.array([vx, vy, vz, ax, ay, az])
 
 
@@ -27,8 +27,7 @@ class Earth:
         self.poligons = 200
         self.R = 6371
         self.R_atm = 6489
-        self.mass = 5.972 * (10 ** 24)
-        self.mass = 100000
+        self.mass = 5 * (10 ** 16)
         self.g = 9.8
 
     def create(self):
@@ -42,34 +41,34 @@ class Earth:
         im = PIL.Image.open('min_earth.png')
         im = np.array(im.resize([self.poligons, self.poligons])) / 255
 
-        ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
+        ax.scatter(0, 0, 0, color="blue")
+        #ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
 
 
 class Satellite:
     def __init__(self, latitude, longitude):
-        self.hight = 2000
+        self.hight = 1000
 
         x = earth.R + self.hight
         y = 0
         z = 0
 
-
         self.x, self.z = rotation(x, z, latitude)
         self.x, self.y = rotation(self.x, y, longitude)
+        self.x, self.y, self.z = round(self.x), round(self.y), round(self.z)
 
         self.velocity = 8000
         self.mass = 100
-        self.mass = 10
 
-        self.vx = 0
+        self.vx = 25
         self.vy = 0
-        self.vz = 3.5
+        self.vz = 0
 
 
 
     def create(self):
         ax.scatter(self.x, self.y, self.z, color="red")
-        ts = np.linspace(0, 100000, 1000)
+        ts = np.linspace(0, 5000, 1000)
         state0 = np.array([self.x, self.y, self.z, self.vx, self.vy, self.vz])
 
         sol = odeint(state, state0, ts)
@@ -90,11 +89,11 @@ ax.set_box_aspect((1, 1, 1))
 
 
 G = 6.6743015 * (10**(-11))
-G = 1
 mu = 3.986004418E+05  # Earth's gravitational parameter
 
 earth = Earth()
-satellite = Satellite(0, 0)
+latitude, longitude = 45, 0
+satellite = Satellite(latitude, longitude)
 
 earth.create()
 satellite.create()
