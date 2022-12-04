@@ -16,6 +16,7 @@ def state(s: np.ndarray, t: float) -> np.ndarray:
     x, y, z, vx, vy, vz = s
     r = np.array([0 - x, 0 - y, 0 - z])
     mr = np.linalg.norm(r) ** 3
+    print(mr)
     ax = G * (M_1 * (0 - x) / mr + M_2 * (0 - x) / mr)
     ay = G * (M_1 * (0 - y) / mr + M_2 * (0 - y) / mr)
     az = G * (M_1 * (0 - z) / mr + M_2 * (0 - z) / mr)
@@ -41,8 +42,8 @@ class Earth:
         im = PIL.Image.open('min_earth.png')
         im = np.array(im.resize([self.poligons, self.poligons])) / 255
 
-        ax.scatter(0, 0, 0, color="blue")
-        #ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
+        #ax.scatter(0, 0, 0, color="blue")
+        ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
 
 
 class Satellite:
@@ -60,9 +61,18 @@ class Satellite:
         self.velocity = 8000
         self.mass = 100
 
-        self.vx = 25
+        '''if -5 <= latitude <= 5:
+            self.vx = 0
+            self.vy = 0
+            self.vz = 22
+        else:
+            self.vz = 0
+            if longitude < 90:'''
+
+        self.vx = 0
         self.vy = 0
-        self.vz = 0
+        self.vz = 22
+
 
 
 
@@ -86,13 +96,17 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.set_box_aspect((1, 1, 1))
 
+ax.patch.set_facecolor('black')
+
+plt.axis('off')
+plt.grid(b=None)
 
 
 G = 6.6743015 * (10**(-11))
 mu = 3.986004418E+05  # Earth's gravitational parameter
 
 earth = Earth()
-latitude, longitude = 45, 0
+latitude, longitude = 0, 0
 satellite = Satellite(latitude, longitude)
 
 earth.create()
