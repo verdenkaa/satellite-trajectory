@@ -43,17 +43,17 @@ class Earth:
 
         #ax.scatter(0, 0, 0, color="blue")
         ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
-        ax.scatter(15000, 15000, 15000, alpha=0)
-        ax.scatter(-15000, 15000, 15000, alpha=0)
-        ax.scatter(15000, -15000, 15000, alpha=0)
-        ax.scatter(15000, 15000, -15000, alpha=0)
+        #ax.scatter(15000, 15000, 15000, alpha=0)
+        #ax.scatter(-15000, 15000, 15000, alpha=0)
+        #ax.scatter(15000, -15000, 15000, alpha=0)
+        #ax.scatter(15000, 15000, -15000, alpha=0)
 
 
 
 
 class Satellite:
     def __init__(self, latitude, longitude):
-        self.hight = 1000
+        self.hight = 500
 
         x = earth.R + self.hight
         y = 0
@@ -66,35 +66,47 @@ class Satellite:
         self.velocity = 8000
         self.mass = 100
 
-        '''if -5 <= latitude <= 5:
-            self.vx = 0
-            self.vy = 0
-            self.vz = 22
-        else:
-            self.vz = 0
-            if longitude < 90:'''
 
         self.vx = 0
         self.vy = 0
-        self.vz = 23
+        self.vz = 25
 
 
 
 
     def create(self):
         #ax.scatter(self.x, self.y, self.z, color="red")
-        ts = np.linspace(0, 5000, 1000)
-        x, z = rotation(self.x, self.z, 180 - latitude)
-        x, y = rotation(x, self.y, 180 - longitude)
+        ts = np.linspace(0, 3000, 1000)
+        ts2 = np.linspace(0, 30000, 1000)
+        x, z = rotation(self.x, self.z, -latitude)
+        x, y = rotation(x, self.y, -longitude)
         state0 = np.array([x, y, z, self.vx, self.vy, self.vz])
 
         sol = odeint(state, state0, ts)
+
+        '''sol2 = []
+        for i in range(len(np.array(sol))):
+            x2, y2, z2 = sol[i][:3]
+            _x2, z2 = rotation(x2, z2, latitude)
+            x2, y2 = rotation(x2, y2, longitude)
+
+            sol2.append([x2, y2, z2])
+
+        sol = np.array(sol2)'''
+
         xyz = min(sol, key=lambda x: math.sqrt((x[0] - self.x) ** 2 + (x[1] - self.y) ** 2 + (x[2] - self.z) ** 2))
 
-        ax.scatter(self.x, self.y, self.z, color="red")
+        ax.scatter(xyz[0], xyz[1], xyz[2], color="red")
+        ax.plot(sol[:,0], sol[:,1], sol[:,2], 'g', label='Trajectory', linewidth=2.0, color="green")
+        ax.plot([sol[0][0], sol[-1][0]], [sol[0][1], sol[-1][1]], [sol[0][2], sol[-1][2]], color="orange", linewidth=5.0)
+        #ax.scatter(sol[0][0], sol[0][1],)
 
-        ax.scatter(xyz[0], xyz[1], xyz[2], color="black")
-        ax.plot(sol[:,0], sol[:,1], sol[:,2], 'g', label='Trajectory', linewidth=2.0)
+        R = min(sol, key=lambda x: math.sqrt((x[0]) ** 2 + (x[1]) ** 2 + (x[2]) ** 2))
+        R = math.sqrt((R[0]) ** 2 + (R[1]) ** 2 + (R[2]) ** 2)
+        print(R)
+        R_t = R < (6371 + 100)
+        print("Атмосфера", R_t)
+
 
         trajectory = [i[0:3] for i in sol]
         velocity = [i[3:6] for i in sol]
@@ -105,18 +117,38 @@ class Satellite:
         potential_enegry = []
         total_energy = []
 
-        for i in sol:
-            v = math.sqrt(i[3] ** 2 + i[4] ** 2 + i[5] ** 2)
-            h = math.sqrt(i[0] ** 2 + i[1] ** 2 + i[2] ** 2)
-            kinetic_enegry.append(satellite.mass * (v ** 2) / 2)
-            potential_enegry.append(satellite.mass * 9.8 * h)
-            total_energy.append(kinetic_enegry[-1] + potential_enegry[-1])
+        #current_point = np.array(trajectory[1][:]).transpose()
+
+        #for i in sol:
+            # v = math.sqrt(i[3] ** 2 + i[4] ** 2 + i[5] ** 2)
+            #h = math.sqrt(i[0] ** 2 + i[1] ** 2 + i[2] ** 2)
+            #kinetic_enegry.append(0.5 * satellite.mass * np.dot(velocity[i][:], velocity[i][:]))
+            #potential_enegry.append(-1 * G * earth.mass * satellite.mass)
+            #total_energy.append(kinetic_enegry[-1] + potential_enegry[-1])
 
 
-        ax2.plot(ts, kinetic_enegry, 'r', label="kinetic")
-        ax2.plot(ts, potential_enegry, 'b', label="potential")
-        ax2.plot(ts, total_energy, 'k', label="total")
-        ax2.legend()
+        state0 = np.array([x, y, z, self.vx, self.vy, self.vz + 3])
+
+        sol = odeint(state, state0, ts2)
+        '''sol2 = []
+        for i in range(len(np.array(sol))):
+            x2, y2, z2 = sol[i][:3]
+            _x2, z2 = rotation(x2, z2, latitude)  # black
+            x2, y2 = rotation(x2, y2, longitude)
+
+            sol2.append([x2, y2, z2])
+        sol2 = np.array(sol2)'''
+        #print(sol2[:, 2])
+        ax.plot(sol[:, 0], sol[:, 1], sol[:, 2], 'g', label='Trajectory', linewidth=2.0, color="black")
+
+
+
+
+
+        #ax2.plot(ts, kinetic_enegry, 'r', label="kinetic")
+        #ax2.plot(ts, potential_enegry, 'b', label="potential")
+        #ax2.plot(ts, total_energy, 'k', label="total")
+        #ax2.legend()
         #ax2.set_title(['change in total energy: ' + S.color_orbit[j] + ' orbit', total_energy[-1] - total_energy[0]])
 
         ax.set_xlabel('X [km]')
@@ -134,7 +166,7 @@ ax.set_box_aspect((1, 1, 1))
 ax.margins(8000, 8000, 8000)
 ax.autoscale(enable=False, tight=True)
 
-ax2.autoscale(enable=True, tight=False)
+#ax2.autoscale(enable=True, tight=False)
 
 #ax.patch.set_facecolor('black')
 
@@ -145,7 +177,7 @@ ax2.autoscale(enable=True, tight=False)
 G = 6.6743015 * (10**(-11))
 
 earth = Earth()
-latitude, longitude = 90, 90
+latitude, longitude = 45, 45
 satellite = Satellite(latitude, longitude)
 
 earth.create()
