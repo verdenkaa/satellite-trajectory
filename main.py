@@ -16,7 +16,6 @@ def state(s: np.ndarray, t: float) -> np.ndarray:
     x, y, z, vx, vy, vz = s
     r = np.array([0 - x, 0 - y, 0 - z])
     mr = np.linalg.norm(r) ** 3
-    print(mr)
     ax = G * (M_1 * (0 - x) / mr + M_2 * (0 - x) / mr)
     ay = G * (M_1 * (0 - y) / mr + M_2 * (0 - y) / mr)
     az = G * (M_1 * (0 - z) / mr + M_2 * (0 - z) / mr)
@@ -24,8 +23,8 @@ def state(s: np.ndarray, t: float) -> np.ndarray:
 
 
 class Earth:
-    def __init__(self):
-        self.poligons = 200
+    def __init__(self, poligons=200):
+        self.poligons = 100
         self.R = 6371
         self.R_atm = 6489
         self.mass = 5 * (10 ** 16)
@@ -44,6 +43,12 @@ class Earth:
 
         #ax.scatter(0, 0, 0, color="blue")
         ax.plot_surface(x, y, z, rstride=4, cstride=4, facecolors=im, antialiased=True, shade=False)
+        ax.scatter(15000, 15000, 15000, alpha=0)
+        ax.scatter(-15000, 15000, 15000, alpha=0)
+        ax.scatter(15000, -15000, 15000, alpha=0)
+        ax.scatter(15000, 15000, -15000, alpha=0)
+
+
 
 
 class Satellite:
@@ -71,42 +76,76 @@ class Satellite:
 
         self.vx = 0
         self.vy = 0
-        self.vz = 22
+        self.vz = 23
 
 
 
 
     def create(self):
-        ax.scatter(self.x, self.y, self.z, color="red")
+        #ax.scatter(self.x, self.y, self.z, color="red")
         ts = np.linspace(0, 5000, 1000)
-        state0 = np.array([self.x, self.y, self.z, self.vx, self.vy, self.vz])
+        x, z = rotation(self.x, self.z, 180 - latitude)
+        x, y = rotation(x, self.y, 180 - longitude)
+        state0 = np.array([x, y, z, self.vx, self.vy, self.vz])
 
         sol = odeint(state, state0, ts)
+        xyz = min(sol, key=lambda x: math.sqrt((x[0] - self.x) ** 2 + (x[1] - self.y) ** 2 + (x[2] - self.z) ** 2))
 
+        ax.scatter(self.x, self.y, self.z, color="red")
+
+        ax.scatter(xyz[0], xyz[1], xyz[2], color="black")
         ax.plot(sol[:,0], sol[:,1], sol[:,2], 'g', label='Trajectory', linewidth=2.0)
 
+        trajectory = [i[0:3] for i in sol]
+        velocity = [i[3:6] for i in sol]
+
+        trajectory_corrected = np.zeros(np.shape(trajectory))
+
+        kinetic_enegry = []
+        potential_enegry = []
+        total_energy = []
+
+        for i in sol:
+            v = math.sqrt(i[3] ** 2 + i[4] ** 2 + i[5] ** 2)
+            h = math.sqrt(i[0] ** 2 + i[1] ** 2 + i[2] ** 2)
+            kinetic_enegry.append(satellite.mass * (v ** 2) / 2)
+            potential_enegry.append(satellite.mass * 9.8 * h)
+            total_energy.append(kinetic_enegry[-1] + potential_enegry[-1])
 
 
-        #ax.plot3D(X_Sat, Y_Sat, Z_Sat, 'black')
+        ax2.plot(ts, kinetic_enegry, 'r', label="kinetic")
+        ax2.plot(ts, potential_enegry, 'b', label="potential")
+        ax2.plot(ts, total_energy, 'k', label="total")
+        ax2.legend()
+        #ax2.set_title(['change in total energy: ' + S.color_orbit[j] + ' orbit', total_energy[-1] - total_energy[0]])
+
         ax.set_xlabel('X [km]')
         ax.set_ylabel('Y [km]')
         ax.set_zlabel('Z [km]')
 
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Joule')
+
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(121, projection='3d')
+ax2 = fig.add_subplot(122)
+ax2.legend()
 ax.set_box_aspect((1, 1, 1))
+ax.margins(8000, 8000, 8000)
+ax.autoscale(enable=False, tight=True)
 
-ax.patch.set_facecolor('black')
+ax2.autoscale(enable=True, tight=False)
 
-plt.axis('off')
-plt.grid(b=None)
+#ax.patch.set_facecolor('black')
+
+#plt.axis('off')
+#plt.grid(b="visible")
 
 
 G = 6.6743015 * (10**(-11))
-mu = 3.986004418E+05  # Earth's gravitational parameter
 
 earth = Earth()
-latitude, longitude = 0, 0
+latitude, longitude = 90, 90
 satellite = Satellite(latitude, longitude)
 
 earth.create()
