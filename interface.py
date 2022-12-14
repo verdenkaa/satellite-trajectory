@@ -27,6 +27,8 @@ class Menu(QMainWindow):
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(121, projection='3d')
         ax2 = fig.add_subplot(122)
+        ax3 = fig.add_subplot(421)
+        ax3.set_axis_off()
         ax2.legend()
         ax.set_box_aspect((1, 1, 1))
         ax.margins(8000, 8000, 8000)
@@ -41,7 +43,13 @@ class Menu(QMainWindow):
         satellite = Satellite(lo, la)
 
         ax = earth.create(ax, polygons)
-        ax, ax2 = satellite.create(ax, ax2, lo, la, hight, speed)
+        ax, ax2, outgo, R_t, crash = satellite.create(ax, ax2, lo, la, hight, speed)
+
+        ax3.text(0, 1, 'The orbit is elliptical', color="orange")
+        ax3.text(0, 0.8, 'The orbit is set', color="green")
+        ax3.text(0, 0.6, f'Leaving orbit: {outgo}')
+        ax3.text(0, 0.4, f'Passes through the atmosphere: {R_t}')
+        ax3.text(0, 0.25, f'Collides with the ground: {crash}')
 
         plt.show()
 

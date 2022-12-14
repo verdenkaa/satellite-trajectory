@@ -27,7 +27,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Долгота</string>
+        <string>Longitude</string>
        </property>
       </widget>
      </item>
@@ -44,7 +44,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Широта</string>
+        <string>Latitude</string>
        </property>
       </widget>
      </item>
@@ -61,7 +61,7 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Высота</string>
+        <string>Hight</string>
        </property>
       </widget>
      </item>
@@ -78,7 +78,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Скорость</string>
+        <string>Speed</string>
        </property>
       </widget>
      </item>
@@ -98,14 +98,14 @@
      <item>
       <widget class="QCheckBox" name="space">
        <property name="text">
-        <string>Космическое пространство</string>
+        <string> Outer space</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Количество полигонов</string>
+        <string>Number of polygons</string>
        </property>
       </widget>
      </item>
@@ -134,7 +134,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Рассчитать</string>
+     <string>Calculate</string>
     </property>
    </widget>
   </widget>

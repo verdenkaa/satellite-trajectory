@@ -73,7 +73,7 @@ class Satellite:
         self.x, self.z = rotation(x, z, longitude)
         self.x, self.y = rotation(self.x, y, latitude)
         self.x, self.y, self.z = round(self.x), round(self.y), round(self.z)
-        ax.scatter(self.x, self.y, self.z, color="black")
+        #ax.scatter(self.x, self.y, self.z, color="black")
 
         G = 6.6743015 * (10 ** (-11))
 
@@ -105,7 +105,7 @@ class Satellite:
 
         line = sum([1 for i in sol if (i[0] - sol[0][0] < 100 and i[1] - sol[0][1] < 100 and i[2] - sol[0][2] < 100)])
 
-        if line > 1:
+        if line > 2:
             outgo = False
         else:
             outgo = True
@@ -124,7 +124,7 @@ class Satellite:
             total_energy.append(kinetic_enegry[-1] + potential_enegry[-1])
 
 
-        state0 = np.array([x, y, z, 0, 0, speed + 3])
+        state0 = np.array([x, y, z, 0, 0, speed + abs(30 - speed)])
 
         sol = odeint(state, state0, ts2)
         ax.plot(sol[:, 0], sol[:, 1], sol[:, 2], 'g', label='Trajectory', linewidth=2.0, color="orange")
@@ -145,4 +145,4 @@ class Satellite:
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Joule')
 
-        return ax, ax2
+        return ax, ax2, outgo, R_t, crash
